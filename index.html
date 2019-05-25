@@ -15,7 +15,33 @@
     <div class="header">
         Draw the desired graph in the following environment.
     </div>
-    <div id="canvasDiv"></div>
+    <div class="row">
+        <div class="col-md-10">
+            <div id="canvasDiv"></div>
+            <div class="row canvasType">
+                <label><input type="radio" name="canvasType" id="addNode" value="node" checked >Insert Node</label>
+                <label><input type="radio" name="canvasType" id="addEdge" value="edge" >Insert Edge</label>
+                <label><input type="radio" name="canvasType" id="selectStart" value="selectStart" >Select Start</label>
+                <label><input type="radio" name="canvasType" id="selectGoal" value="selectGoal" >Select Goal</label>
+                <span class="button" onclick="resetCanvas();">reset</span>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <table class="table table-nodes">
+                <thead>
+                <tr>
+                    <td>
+                        Name
+                    </td>
+                    <td>
+                        Heuristic
+                    </td>
+                </tr>
+                </thead>
+                <tbody id="listNodes"></tbody>
+            </table>
+        </div>
+    </div>
 </div>
 </body>
 <script src="./assets/js/demo.js"></script>
