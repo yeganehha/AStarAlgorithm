@@ -1,6 +1,8 @@
 var sizeCircle = 5 ;
 var sizeCircleName = 10 ;
 var nodes = [];
+var nodeStartId = null ;
+var nodeGoalId = null ;
 var edge = {};
 var indexOfNodes = 0 ;
 
@@ -14,6 +16,12 @@ function canvasClick (e) {
             addNodeTag = false ;
             if($('#addEdge').is(':checked')) {
                 startAddEdge(nodes[index]);
+            }
+            if($('#selectStart').is(':checked')) {
+                selectStart(index);
+            }
+            if($('#selectGoal').is(':checked')) {
+                selectGoal(index);
             }
         }
     }
@@ -79,6 +87,35 @@ function startAddEdge(node) {
 }
 function resetCanvas(){
     location.reload();
+}
+function selectStart(nodeSelectedId){
+    nodes[nodeSelectedId].color = "#0fbeff";
+    nodeStartId = nodeSelectedId ;
+    $("#selectGoal").prop("checked", true);
+    emptyCanvas();
+    $.each(edge, function( edgeStartName, oneEdgeOfStarterNode ) {
+        $.each(oneEdgeOfStarterNode, function( edgeEndName, oneEdge ) {
+            drawEdge(oneEdge.startNode.x, oneEdge.startNode.y, oneEdge.endNode.x ,  oneEdge.endNode.y  , oneEdge.startNode.name ,oneEdge.endNode.name , oneEdge.cost, oneEdge.color );
+        });
+    });
+    for (index = 0; index < indexOfNodes; index++) {
+        drawNode(nodes[index].x, nodes[index].y, nodes[index].name, nodes[index].color);
+    }
+    $("#selectStartDiv").html("<div style='margin:5px;'>Start Node : "+nodes[nodeSelectedId].name+"</div>");
+}
+function selectGoal(nodeSelectedId){
+    nodes[nodeSelectedId].color = "#00ff74";
+    nodeGoalId = nodeSelectedId ;
+    emptyCanvas();
+    $.each(edge, function( edgeStartName, oneEdgeOfStarterNode ) {
+        $.each(oneEdgeOfStarterNode, function( edgeEndName, oneEdge ) {
+            drawEdge(oneEdge.startNode.x, oneEdge.startNode.y, oneEdge.endNode.x ,  oneEdge.endNode.y  , oneEdge.startNode.name ,oneEdge.endNode.name , oneEdge.cost, oneEdge.color );
+        });
+    });
+    for (index = 0; index < indexOfNodes; index++) {
+        drawNode(nodes[index].x, nodes[index].y, nodes[index].name, nodes[index].color);
+    }
+    $("#selectGoalDiv").html("<div style='margin:5px;'>Goal Node : "+nodes[nodeSelectedId].name+"</div>");
 }
 $('document').ready(function(){
     var canvasDiv = document.getElementById('canvasDiv');
