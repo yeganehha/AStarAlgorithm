@@ -21,8 +21,8 @@
             <div class="row canvasType">
                 <label><input type="radio" name="canvasType" id="addNode" value="node" checked >Insert Node</label>
                 <label><input type="radio" name="canvasType" id="addEdge" value="edge" >Insert Edge</label>
-                <label><input type="radio" name="canvasType" id="selectStart" value="selectStart" >Select Start</label>
-                <label><input type="radio" name="canvasType" id="selectGoal" value="selectGoal" >Select Goal</label>
+                <label id="selectStartDiv"><input type="radio" name="canvasType" id="selectStart" value="selectStart" >Select Start</label>
+                <label id="selectGoalDiv"><input type="radio" name="canvasType" id="selectGoal" value="selectGoal" >Select Goal</label>
                 <span class="button" onclick="resetCanvas();">reset</span>
             </div>
         </div>
@@ -40,6 +40,14 @@
                 </thead>
                 <tbody id="listNodes"></tbody>
             </table>
+        </div>
+        <div class="col-md-12 color-white">
+            <article class="markdown-body entry-content p-5" itemprop="text"><h1>A Star Algorithm</h1>
+                <p>A* (pronounced "A star") is a computer algorithm that is widely used in pathfinding and graph traversal, which is the process of finding a path between multiple points, called "nodes". It enjoys widespread use due to its performance and accuracy. <a href="https://en.wikipedia.org/wiki/A*_search_algorithm" rel="nofollow">( Read More ... )</a></p>
+                <h2>Getting Started</h2>
+                <p>We tried to implement this routing algorithm through javascript in this project.</p>
+                <p>In this project we try to implement routing in any desired directional graph, and along with finding the path, we will show how to select the path for the training of the algorithm.</p>
+            </article>
         </div>
     </div>
 </div>

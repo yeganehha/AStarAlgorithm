@@ -160,6 +160,9 @@ body {
     margin-top: 50px;
     cursor: pointer;
 }
+.color-white{
+    color: white !important;
+}
 
 .table-nodes {
     margin-top: 50px;
