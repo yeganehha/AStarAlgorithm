@@ -24,6 +24,9 @@
                 <label id="selectStartDiv"><input type="radio" name="canvasType" id="selectStart" value="selectStart" >Select Start</label>
                 <label id="selectGoalDiv"><input type="radio" name="canvasType" id="selectGoal" value="selectGoal" >Select Goal</label>
                 <span class="button" onclick="resetCanvas();">reset</span>
+                <span class="button" onclick="getResult();">parse</span>
+                <span class="button" onclick="saveData();">save</span>
+                <span class="button" onclick="loadData();">load</span>
             </div>
         </div>
         <div class="col-md-2">
@@ -52,5 +55,6 @@
     </div>
 </div>
 </body>
+<script src="./assets/js/aStar.js"></script>
 <script src="./assets/js/demo.js"></script>
 </html>

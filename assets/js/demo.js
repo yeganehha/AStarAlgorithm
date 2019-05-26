@@ -7,6 +7,38 @@ var edge = {};
 var indexOfNodes = 0 ;
 
 
+function getResult() {
+    let aStar = new astar();
+    aStar.init(nodes,edge,nodes[nodeStartId],nodes[nodeGoalId]);
+    aStar.getResult()
+    // console.log(aStar.getResult());
+}
+
+function saveData() {
+    var data = { nodes : nodes , nodeStartId : nodeStartId ,nodeGoalId : nodeGoalId , edge : edge , indexOfNodes : indexOfNodes };
+    bake_cookie(data);
+}
+function loadData() {
+    var data = read_cookie();
+    nodes = data.nodes;
+    nodeStartId = data.nodeStartId;
+    nodeGoalId = data.nodeGoalId;
+    edge = data.edge;
+    indexOfNodes = data.indexOfNodes;
+    emptyCanvas();
+    $.each(edge, function( edgeStartName, oneEdgeOfStarterNode ) {
+        $.each(oneEdgeOfStarterNode, function( edgeEndName, oneEdge ) {
+            drawEdge(oneEdge.startNode.x, oneEdge.startNode.y, oneEdge.endNode.x ,  oneEdge.endNode.y  , oneEdge.startNode.name ,oneEdge.endNode.name , oneEdge.cost, oneEdge.color );
+        });
+    });
+    $('#listNodes').html();
+    for (index = 0; index < indexOfNodes; index++) {
+        $('#listNodes').append('<tr id="nodeName_'+nodes[index].name+'"><td>'+nodes[index].name+'</td><td>'+nodes[index].heuristic+'</td></tr>');
+        $("#selectStartDiv").html("<div style='margin:5px;'>Start Node : "+nodes[nodeStartId].name+"</div>");
+        $("#selectGoalDiv").html("<div style='margin:5px;'>Goal Node : "+nodes[nodeGoalId].name+"</div>");
+        drawNode(nodes[index].x, nodes[index].y, nodes[index].name, nodes[index].color);
+    }
+}
 
 function canvasClick (e) {
     var addNodeTag = true ;
@@ -14,14 +46,16 @@ function canvasClick (e) {
     for ( index = 0 ; index < indexOfNodes ; index++ ){
         if (  Math.abs( nodes[index].x - hp.x ) <= sizeCircle  && Math.abs( nodes[index].y - hp.y ) <= sizeCircle ) {
             addNodeTag = false ;
-            if($('#addEdge').is(':checked')) {
+            var doAction = true ;
+            if($('#addEdge').is(':checked') && doAction) {
                 startAddEdge(nodes[index]);
-            }
-            if($('#selectStart').is(':checked')) {
+                doAction = false ;
+            } else if($('#selectStart').is(':checked') && doAction) {
                 selectStart(index);
-            }
-            if($('#selectGoal').is(':checked')) {
+                doAction = false ;
+            } else if($('#selectGoal').is(':checked') && doAction) {
                 selectGoal(index);
+                doAction = false ;
             }
         }
     }
@@ -144,8 +178,9 @@ function getMousePos(canvas, evt) {
         y: (evt.clientY - rect.top) * scaleY     // been adjusted to be relative to element
     }
 }
-function drawEdge(startX , startY , EndX , EndY , StartName , EndName , Cost) {
+function drawEdge(startX , startY , EndX , EndY , StartName , EndName , Cost , color) {
     context.beginPath();
+    context.strokeStyle = color;
     context.moveTo(startX, startY);
     context.lineTo(EndX, EndY);
     context.stroke();
@@ -178,4 +213,14 @@ function drawNode(X,Y , name, color) {
 }
 function emptyCanvas() {
     context.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function bake_cookie(value) {
+    console.log(JSON.stringify(value));
+}
+function read_cookie() {
+    var text =
+        '{"nodes":[{"x":20.761902824280753,"y":82.20000041614878,"name":"A","heuristic":"1","color":"#0fbeff"},{"x":122.03174409412202,"y":44.01818223433061,"name":"B","heuristic":"1","color":"#fff5f5"},{"x":122.03174409412202,"y":132.38181859796697,"name":"C","heuristic":"3","color":"#fff5f5"},{"x":216.95237901475693,"y":87.65454587069424,"name":"D","heuristic":"1","color":"#00ff74"}],"nodeStartId":0,"nodeGoalId":3,"edge":{"A":{"B":{"startNode":{"x":20.761902824280753,"y":82.20000041614878,"name":"A","heuristic":"1","color":"#0fbeff"},"endNode":{"x":122.03174409412202,"y":44.01818223433061,"name":"B","heuristic":"1","color":"#fff5f5"},"cost":"1","color":"#fff5f5"},"C":{"startNode":{"x":20.761902824280753,"y":82.20000041614878,"name":"A","heuristic":"1","color":"#0fbeff"},"endNode":{"x":122.03174409412202,"y":132.38181859796697,"name":"C","heuristic":"3","color":"#fff5f5"},"cost":"3","color":"#fff5f5"}},"B":{"D":{"startNode":{"x":122.03174409412202,"y":44.01818223433061,"name":"B","heuristic":"1","color":"#fff5f5"},"endNode":{"x":216.95237901475693,"y":87.65454587069424,"name":"D","heuristic":"1","color":"#00ff74"},"cost":"1","color":"#fff5f5"}},"C":{"D":{"startNode":{"x":122.03174409412202,"y":132.38181859796697,"name":"C","heuristic":"3","color":"#fff5f5"},"endNode":{"x":216.95237901475693,"y":87.65454587069424,"name":"D","heuristic":"1","color":"#00ff74"},"cost":"3","color":"#fff5f5"}}},"indexOfNodes":4}'
+    ;
+    return JSON.parse(text);
 }
