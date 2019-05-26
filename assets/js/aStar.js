@@ -7,6 +7,7 @@ class astar {
         this.starterNode = startNode;
         this.GoalNode = goalNode;
         this.queue = [ {nodes :  [ startNode ] , g : 0 , f : parseInt(startNode.heuristic) , extendAble : true }] ;
+        this.queueShow = [ [{nodes :  startNode.name , g : 0 , f : parseInt(startNode.heuristic) , h : parseInt(startNode.heuristic) }] ] ;
     }
 
     getResult(){
@@ -33,6 +34,11 @@ class astar {
             for (i = 0; i < newQueue.length; i++)
                 this.queue.splice(minFId, 0, newQueue[i]);
 
+            var queueShow = [] ;
+            for (i = 0; i <  this.queue.length; i++) {
+                queueShow[queueShow.length] = { nodes : this.getNodesNames(this.queue[i].nodes) , f : this.queue[i].f , g: this.queue[i].g , h : parseInt( parseInt(this.queue[i].f) - parseInt(this.queue[i].g)) };
+            }
+            this.queueShow[ this.queueShow.length ] = queueShow ;
         } while ( extendAble );
         return 'no way !!';
     }
@@ -69,4 +75,17 @@ class astar {
         return shouldReplace ;
     }
 
+    getNodesNames(nodes){
+        var name = "" ;
+        for ( var i = 0 ; i < nodes.length ; i++  ){
+            if ( i === 0 )
+                name = nodes[i].name ;
+            else
+                name += " > " + nodes[i].name ;
+        }
+        return name ;
+    }
+    getQueuePerEachRow(){
+        return this.queueShow;
+    }
 }

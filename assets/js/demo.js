@@ -17,6 +17,7 @@ function getResult() {
     let aStar = new astar();
     aStar.init(nodes,edge,nodes[nodeStartId],nodes[nodeGoalId]);
     var resultNodes = aStar.getResult();
+    var resultHint = aStar.getQueuePerEachRow();
     if (resultNodes === "no way !!"){
         alert('Can Not find path between Start and Goal Node!');
         return;
@@ -32,14 +33,27 @@ function getResult() {
     }
     nodes[nodeGoalId].color = goalColor;
     reDrawCanvas(false);
+
+    var stringHint = "" ;
+    for ( i = 0 ; i < resultHint.length ; i++ ){
+        stringHint += '<p style="margin-top: 10px;"><strong>level '+i+' queue :</strong> { ';
+        for ( var i2 = 0 ; i2 < resultHint[i].length ; i2++ ){
+            if ( i2 === 0 )
+                stringHint += ' [ '+ resultHint[i][i2].nodes +' , <strong style="cursor: pointer;" title="f() = g() + h() = '+resultHint[i][i2].g +' + '+ resultHint[i][i2].h +' = '+resultHint[i][i2].f +' ">' +  resultHint[i][i2].f + '</strong> ] ';
+            else
+                stringHint += ' , [ '+ resultHint[i][i2].nodes +' , <strong style="cursor: pointer;" title="f() = g() + h() = '+resultHint[i][i2].g +' + '+ resultHint[i][i2].h +' = '+resultHint[i][i2].f +' ">' +  resultHint[i][i2].f + '</strong> ] ';
+        }
+        stringHint += ' } </p><hr>';
+    }
+    $("#hint").html(stringHint);
 }
 
 function saveData() {
     var data = { nodes : nodes , nodeStartId : nodeStartId ,nodeGoalId : nodeGoalId , edge : edge , indexOfNodes : indexOfNodes };
     bake_cookie(data);
 }
-function loadData() {
-    var data = read_cookie();
+function loadData(exampleId) {
+    var data = read_cookie(exampleId);
     nodes = data.nodes;
     nodeStartId = data.nodeStartId;
     nodeGoalId = data.nodeGoalId;
@@ -213,8 +227,35 @@ function bake_cookie(value) {
     date.setTime(date.getTime() + (3*24*60*60*1000));
     var expires = "; expires=" + date.toUTCString();
     document.cookie =  "graphData=" + ( (JSON.stringify(value)) || "")  + expires + "; path=/";
+    console.log(JSON.stringify(value));
 }
-function read_cookie() {
+function read_cookie(exampleId) {
+    if ( exampleId === 1 ){
+        var text =
+            '{"nodes":[{"x":21.714283776661706,"y":118.47272768887606,"name":"A","heuristic":"4","color":"#0fbeff","id":0},{"x":65.52380758618551,"y":66.65454587069424,"name":"B","heuristic":"2","color":"#fff5f5","id":1},{"x":127.1111091734871,"y":29.836364052512426,"name":"C","heuristic":"6","color":"#fff5f5","id":2},{"x":121.39682345920139,"y":98.56363677978514,"name":"D","heuristic":"2","color":"#fff5f5","id":3},{"x":203.30158536396328,"y":70.74545496160333,"name":"E","heuristic":"3","color":"#fff5f5","id":4},{"x":236.95237901475693,"y":132.38181859796697,"name":"F","heuristic":"1","color":"#00ff74","id":5}],"nodeStartId":0,"nodeGoalId":5,"edge":{"A":{"B":{"startNode":{"x":21.714283776661706,"y":118.47272768887606,"name":"A","heuristic":"4","color":"#0fbeff","id":0},"endNode":{"x":65.52380758618551,"y":66.65454587069424,"name":"B","heuristic":"2","color":"#fff5f5","id":1},"cost":"1","color":"#fff5f5"},"F":{"startNode":{"x":21.714283776661706,"y":118.47272768887606,"name":"A","heuristic":"4","color":"#0fbeff","id":0},"endNode":{"x":236.95237901475693,"y":132.38181859796697,"name":"F","heuristic":"1","color":"#00ff74","id":5},"cost":"12","color":"#fff5f5"}},"B":{"C":{"startNode":{"x":65.52380758618551,"y":66.65454587069424,"name":"B","heuristic":"2","color":"#fff5f5","id":1},"endNode":{"x":127.1111091734871,"y":29.836364052512426,"name":"C","heuristic":"6","color":"#fff5f5","id":2},"cost":"3","color":"#fff5f5"},"D":{"startNode":{"x":65.52380758618551,"y":66.65454587069424,"name":"B","heuristic":"2","color":"#fff5f5","id":1},"endNode":{"x":121.39682345920139,"y":98.56363677978514,"name":"D","heuristic":"2","color":"#fff5f5","id":3},"cost":"1","color":"#fff5f5"}},"C":{"E":{"startNode":{"x":127.1111091734871,"y":29.836364052512426,"name":"C","heuristic":"6","color":"#fff5f5","id":2},"endNode":{"x":203.30158536396328,"y":70.74545496160333,"name":"E","heuristic":"3","color":"#fff5f5","id":4},"cost":"3","color":"#fff5f5"}},"E":{"F":{"startNode":{"x":203.30158536396328,"y":70.74545496160333,"name":"E","heuristic":"3","color":"#fff5f5","id":4},"endNode":{"x":236.95237901475693,"y":132.38181859796697,"name":"F","heuristic":"1","color":"#00ff74","id":5},"cost":"3","color":"#fff5f5"}},"D":{"E":{"startNode":{"x":121.39682345920139,"y":98.56363677978514,"name":"D","heuristic":"2","color":"#fff5f5","id":3},"endNode":{"x":203.30158536396328,"y":70.74545496160333,"name":"E","heuristic":"3","color":"#fff5f5","id":4},"cost":"2","color":"#fff5f5"},"F":{"startNode":{"x":121.39682345920139,"y":98.56363677978514,"name":"D","heuristic":"2","color":"#fff5f5","id":3},"endNode":{"x":236.95237901475693,"y":132.38181859796697,"name":"F","heuristic":"1","color":"#00ff74","id":5},"cost":"2","color":"#fff5f5"}}},"indexOfNodes":6}'
+        ;
+        return JSON.parse(text);
+    }else if ( exampleId === 2 ){
+        var text =
+            ''
+        ;
+        return JSON.parse(text);
+    }else if ( exampleId === 3 ){
+        var text =
+            ''
+        ;
+        return JSON.parse(text);
+    }else if ( exampleId === 4 ){
+        var text =
+            ''
+        ;
+        return JSON.parse(text);
+    }else if ( exampleId === 5 ){
+        var text =
+            ''
+        ;
+        return JSON.parse(text);
+    }
     var nameEQ = "graphData=";
     var ca = document.cookie.split(';');
     for(var i=0;i < ca.length;i++) {
