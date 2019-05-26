@@ -12,11 +12,15 @@ var indexOfNodes = 0 ;
 function getResult() {
     if ( nodeStartId == null || nodeGoalId == null ){
         alert('Please select Start and Goal Nodes!');
+        return;
     }
     let aStar = new astar();
     aStar.init(nodes,edge,nodes[nodeStartId],nodes[nodeGoalId]);
     var resultNodes = aStar.getResult();
-    console.log(resultNodes);
+    if (resultNodes === "no way !!"){
+        alert('Can Not find path between Start and Goal Node!');
+        return;
+    }
     var lastNodeName = null ;
     for ( var i = 0 ; i < resultNodes.length ; i++ ){
         var id =  resultNodes[i].id ;

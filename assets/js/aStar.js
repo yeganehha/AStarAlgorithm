@@ -43,6 +43,11 @@ class astar {
         var lastNodeInQueueLeaf = queueLeaf.nodes[queueLeaf.nodes.length-1];
         var nodes = this.nodes;
         var newNodeRun = [];
+        if ( typeof this.edges[lastNodeInQueueLeaf.name] === "undefined" ){
+            queueLeaf.extendAble = false ;
+            shouldReplace[shouldReplaceIndex] = queueLeaf;
+            return shouldReplace ;
+        }
         $.each(this.edges[lastNodeInQueueLeaf.name], function (nameOfEdgeTo, EdgeInformation) {
             var g = parseInt( parseInt(queueLeaf.g) + parseInt(EdgeInformation.cost) ) ;
             var f  = parseInt(g) ;
