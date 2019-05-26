@@ -1,5 +1,7 @@
 var sizeCircle = 5 ;
 var sizeCircleName = 10 ;
+var goColor = "#0fbeff" ;
+var goalColor = "#00ff74" ;
 var nodes = [];
 var nodeStartId = null ;
 var nodeGoalId = null ;
@@ -7,6 +9,58 @@ var edge = {};
 var indexOfNodes = 0 ;
 
 
+function getResult() {
+    if ( nodeStartId == null || nodeGoalId == null ){
+        alert('Please select Start and Goal Nodes!');
+        return;
+    }
+    let aStar = new astar();
+    aStar.init(nodes,edge,nodes[nodeStartId],nodes[nodeGoalId]);
+    var resultNodes = aStar.getResult();
+    var resultHint = aStar.getQueuePerEachRow();
+    if (resultNodes === "no way !!"){
+        alert('Can Not find path between Start and Goal Node!');
+        return;
+    }
+    var lastNodeName = null ;
+    for ( var i = 0 ; i < resultNodes.length ; i++ ){
+        var id =  resultNodes[i].id ;
+        nodes[id].color = goColor;
+        if ( lastNodeName !== null ){
+            edge[lastNodeName][ nodes[id].name ].color = goColor ;
+        }
+        lastNodeName = nodes[id].name ;
+    }
+    nodes[nodeGoalId].color = goalColor;
+    reDrawCanvas(false);
+
+    var stringHint = "" ;
+    for ( i = 0 ; i < resultHint.length ; i++ ){
+        stringHint += '<p style="margin-top: 10px;"><strong>level '+i+' queue :</strong> { ';
+        for ( var i2 = 0 ; i2 < resultHint[i].length ; i2++ ){
+            if ( i2 === 0 )
+                stringHint += ' [ '+ resultHint[i][i2].nodes +' , <strong style="cursor: pointer;" title="f() = g() + h() = '+resultHint[i][i2].g +' + '+ resultHint[i][i2].h +' = '+resultHint[i][i2].f +' ">' +  resultHint[i][i2].f + '</strong> ] ';
+            else
+                stringHint += ' , [ '+ resultHint[i][i2].nodes +' , <strong style="cursor: pointer;" title="f() = g() + h() = '+resultHint[i][i2].g +' + '+ resultHint[i][i2].h +' = '+resultHint[i][i2].f +' ">' +  resultHint[i][i2].f + '</strong> ] ';
+        }
+        stringHint += ' } </p><hr>';
+    }
+    $("#hint").html(stringHint);
+}
+
+function saveData() {
+    var data = { nodes : nodes , nodeStartId : nodeStartId ,nodeGoalId : nodeGoalId , edge : edge , indexOfNodes : indexOfNodes };
+    bake_cookie(data);
+}
+function loadData(exampleId) {
+    var data = read_cookie(exampleId);
+    nodes = data.nodes;
+    nodeStartId = data.nodeStartId;
+    nodeGoalId = data.nodeGoalId;
+    edge = data.edge;
+    indexOfNodes = data.indexOfNodes;
+    reDrawCanvas(true);
+}
 
 function canvasClick (e) {
     var addNodeTag = true ;
@@ -14,14 +68,16 @@ function canvasClick (e) {
     for ( index = 0 ; index < indexOfNodes ; index++ ){
         if (  Math.abs( nodes[index].x - hp.x ) <= sizeCircle  && Math.abs( nodes[index].y - hp.y ) <= sizeCircle ) {
             addNodeTag = false ;
-            if($('#addEdge').is(':checked')) {
+            var doAction = true ;
+            if($('#addEdge').is(':checked') && doAction) {
                 startAddEdge(nodes[index]);
-            }
-            if($('#selectStart').is(':checked')) {
+                doAction = false ;
+            } else if($('#selectStart').is(':checked') && doAction) {
                 selectStart(index);
-            }
-            if($('#selectGoal').is(':checked')) {
+                doAction = false ;
+            } else if($('#selectGoal').is(':checked') && doAction) {
                 selectGoal(index);
+                doAction = false ;
             }
         }
     }
@@ -37,7 +93,7 @@ function addNode ( hp ){
     } while ( ! parseInt(heuristic) > 0 ) ;
     var name = String.fromCharCode(65 + indexOfNodes) ;
     drawNode(hp.x ,  hp.y , name , "#fff5f5");
-    nodes[indexOfNodes] = {x: hp.x, y: hp.y, name: name, heuristic: heuristic , color: "#fff5f5"};
+    nodes[indexOfNodes] = {x: hp.x, y: hp.y, name: name, heuristic: heuristic , color: "#fff5f5" , id:indexOfNodes};
     $('#listNodes').append('<tr id="nodeName_'+name+'"><td>'+name+'</td><td>'+heuristic+'</td></tr>');
     indexOfNodes++;
 }
@@ -49,15 +105,7 @@ function startAddEdge(node) {
         tempNode = node ;
         $('#canvas').mousemove(function (e) {
             if ( tempStartEdge  ) {
-                emptyCanvas();
-                $.each(edge, function (edgeStartName, oneEdgeOfStarterNode) {
-                    $.each(oneEdgeOfStarterNode, function (edgeEndName, oneEdge) {
-                        drawEdge(oneEdge.startNode.x, oneEdge.startNode.y, oneEdge.endNode.x, oneEdge.endNode.y , oneEdge.startNode.name ,oneEdge.endNode.name , oneEdge.cost , oneEdge.color );
-                    });
-                });
-                for (index = 0; index < indexOfNodes; index++) {
-                    drawNode(nodes[index].x, nodes[index].y, nodes[index].name, nodes[index].color);
-                }
+                reDrawCanvas(false);
                 var hp = getMousePos(canvas, e);
                 drawEdge(node.x, node.y, hp.x, hp.y, node.name ,"" , "" , "#fff5f5" );
             }
@@ -73,15 +121,7 @@ function startAddEdge(node) {
             } while ( ! parseInt(cost) > 0 ) ;
             edge[tempNode.name][node.name] = {startNode: tempNode, endNode: node, cost: cost , color : "#fff5f5" };
         }
-        emptyCanvas();
-        $.each(edge, function( edgeStartName, oneEdgeOfStarterNode ) {
-            $.each(oneEdgeOfStarterNode, function( edgeEndName, oneEdge ) {
-                drawEdge(oneEdge.startNode.x, oneEdge.startNode.y, oneEdge.endNode.x ,  oneEdge.endNode.y  , oneEdge.startNode.name ,oneEdge.endNode.name , oneEdge.cost, oneEdge.color );
-            });
-        });
-        for (index = 0; index < indexOfNodes; index++) {
-            drawNode(nodes[index].x, nodes[index].y, nodes[index].name, nodes[index].color);
-        }
+        reDrawCanvas(false);
         tempNode = null;
     }
 }
@@ -89,32 +129,16 @@ function resetCanvas(){
     location.reload();
 }
 function selectStart(nodeSelectedId){
-    nodes[nodeSelectedId].color = "#0fbeff";
+    nodes[nodeSelectedId].color = goColor;
     nodeStartId = nodeSelectedId ;
     $("#selectGoal").prop("checked", true);
-    emptyCanvas();
-    $.each(edge, function( edgeStartName, oneEdgeOfStarterNode ) {
-        $.each(oneEdgeOfStarterNode, function( edgeEndName, oneEdge ) {
-            drawEdge(oneEdge.startNode.x, oneEdge.startNode.y, oneEdge.endNode.x ,  oneEdge.endNode.y  , oneEdge.startNode.name ,oneEdge.endNode.name , oneEdge.cost, oneEdge.color );
-        });
-    });
-    for (index = 0; index < indexOfNodes; index++) {
-        drawNode(nodes[index].x, nodes[index].y, nodes[index].name, nodes[index].color);
-    }
+    reDrawCanvas(false);
     $("#selectStartDiv").html("<div style='margin:5px;'>Start Node : "+nodes[nodeSelectedId].name+"</div>");
 }
 function selectGoal(nodeSelectedId){
-    nodes[nodeSelectedId].color = "#00ff74";
+    nodes[nodeSelectedId].color = goalColor;
     nodeGoalId = nodeSelectedId ;
-    emptyCanvas();
-    $.each(edge, function( edgeStartName, oneEdgeOfStarterNode ) {
-        $.each(oneEdgeOfStarterNode, function( edgeEndName, oneEdge ) {
-            drawEdge(oneEdge.startNode.x, oneEdge.startNode.y, oneEdge.endNode.x ,  oneEdge.endNode.y  , oneEdge.startNode.name ,oneEdge.endNode.name , oneEdge.cost, oneEdge.color );
-        });
-    });
-    for (index = 0; index < indexOfNodes; index++) {
-        drawNode(nodes[index].x, nodes[index].y, nodes[index].name, nodes[index].color);
-    }
+    reDrawCanvas(false);
     $("#selectGoalDiv").html("<div style='margin:5px;'>Goal Node : "+nodes[nodeSelectedId].name+"</div>");
 }
 $('document').ready(function(){
@@ -144,8 +168,9 @@ function getMousePos(canvas, evt) {
         y: (evt.clientY - rect.top) * scaleY     // been adjusted to be relative to element
     }
 }
-function drawEdge(startX , startY , EndX , EndY , StartName , EndName , Cost) {
+function drawEdge(startX , startY , EndX , EndY , StartName , EndName , Cost , color) {
     context.beginPath();
+    context.strokeStyle = color;
     context.moveTo(startX, startY);
     context.lineTo(EndX, EndY);
     context.stroke();
@@ -176,6 +201,67 @@ function drawNode(X,Y , name, color) {
     context.font = sizeCircleName+"px Arial";
     context.fillText(name, X - ( sizeCircle / 2 ) , Y + ( sizeCircle / 2 ));
 }
-function emptyCanvas() {
+
+function reDrawCanvas( reDrawHtml ) {
     context.clearRect(0, 0, canvas.width, canvas.height);
+    $.each(edge, function( edgeStartName, oneEdgeOfStarterNode ) {
+        $.each(oneEdgeOfStarterNode, function( edgeEndName, oneEdge ) {
+            drawEdge(oneEdge.startNode.x, oneEdge.startNode.y, oneEdge.endNode.x ,  oneEdge.endNode.y  , oneEdge.startNode.name ,oneEdge.endNode.name , oneEdge.cost, oneEdge.color );
+        });
+    });
+    if ( reDrawHtml )
+        $('#listNodes').html();
+    for (index = 0; index < indexOfNodes; index++) {
+        if ( reDrawHtml ) {
+            $('#listNodes').append('<tr id="nodeName_' + nodes[index].name + '"><td>' + nodes[index].name + '</td><td>' + nodes[index].heuristic + '</td></tr>');
+            if ( nodeStartId != null)
+                $("#selectStartDiv").html("<div style='margin:5px;'>Start Node : " + nodes[nodeStartId].name + "</div>");
+            if ( nodeGoalId != null)
+                $("#selectGoalDiv").html("<div style='margin:5px;'>Goal Node : " + nodes[nodeGoalId].name + "</div>");
+        }
+        drawNode(nodes[index].x, nodes[index].y, nodes[index].name, nodes[index].color);
+    }
+}
+function bake_cookie(value) {
+    var date = new Date();
+    date.setTime(date.getTime() + (3*24*60*60*1000));
+    var expires = "; expires=" + date.toUTCString();
+    document.cookie =  "graphData=" + ( (JSON.stringify(value)) || "")  + expires + "; path=/";
+    console.log(JSON.stringify(value));
+}
+function read_cookie(exampleId) {
+    if ( exampleId === 1 ){
+        var text =
+            '{"nodes":[{"x":21.714283776661706,"y":118.47272768887606,"name":"A","heuristic":"4","color":"#0fbeff","id":0},{"x":65.52380758618551,"y":66.65454587069424,"name":"B","heuristic":"2","color":"#fff5f5","id":1},{"x":127.1111091734871,"y":29.836364052512426,"name":"C","heuristic":"6","color":"#fff5f5","id":2},{"x":121.39682345920139,"y":98.56363677978514,"name":"D","heuristic":"2","color":"#fff5f5","id":3},{"x":203.30158536396328,"y":70.74545496160333,"name":"E","heuristic":"3","color":"#fff5f5","id":4},{"x":236.95237901475693,"y":132.38181859796697,"name":"F","heuristic":"1","color":"#00ff74","id":5}],"nodeStartId":0,"nodeGoalId":5,"edge":{"A":{"B":{"startNode":{"x":21.714283776661706,"y":118.47272768887606,"name":"A","heuristic":"4","color":"#0fbeff","id":0},"endNode":{"x":65.52380758618551,"y":66.65454587069424,"name":"B","heuristic":"2","color":"#fff5f5","id":1},"cost":"1","color":"#fff5f5"},"F":{"startNode":{"x":21.714283776661706,"y":118.47272768887606,"name":"A","heuristic":"4","color":"#0fbeff","id":0},"endNode":{"x":236.95237901475693,"y":132.38181859796697,"name":"F","heuristic":"1","color":"#00ff74","id":5},"cost":"12","color":"#fff5f5"}},"B":{"C":{"startNode":{"x":65.52380758618551,"y":66.65454587069424,"name":"B","heuristic":"2","color":"#fff5f5","id":1},"endNode":{"x":127.1111091734871,"y":29.836364052512426,"name":"C","heuristic":"6","color":"#fff5f5","id":2},"cost":"3","color":"#fff5f5"},"D":{"startNode":{"x":65.52380758618551,"y":66.65454587069424,"name":"B","heuristic":"2","color":"#fff5f5","id":1},"endNode":{"x":121.39682345920139,"y":98.56363677978514,"name":"D","heuristic":"2","color":"#fff5f5","id":3},"cost":"1","color":"#fff5f5"}},"C":{"E":{"startNode":{"x":127.1111091734871,"y":29.836364052512426,"name":"C","heuristic":"6","color":"#fff5f5","id":2},"endNode":{"x":203.30158536396328,"y":70.74545496160333,"name":"E","heuristic":"3","color":"#fff5f5","id":4},"cost":"3","color":"#fff5f5"}},"E":{"F":{"startNode":{"x":203.30158536396328,"y":70.74545496160333,"name":"E","heuristic":"3","color":"#fff5f5","id":4},"endNode":{"x":236.95237901475693,"y":132.38181859796697,"name":"F","heuristic":"1","color":"#00ff74","id":5},"cost":"3","color":"#fff5f5"}},"D":{"E":{"startNode":{"x":121.39682345920139,"y":98.56363677978514,"name":"D","heuristic":"2","color":"#fff5f5","id":3},"endNode":{"x":203.30158536396328,"y":70.74545496160333,"name":"E","heuristic":"3","color":"#fff5f5","id":4},"cost":"2","color":"#fff5f5"},"F":{"startNode":{"x":121.39682345920139,"y":98.56363677978514,"name":"D","heuristic":"2","color":"#fff5f5","id":3},"endNode":{"x":236.95237901475693,"y":132.38181859796697,"name":"F","heuristic":"1","color":"#00ff74","id":5},"cost":"2","color":"#fff5f5"}}},"indexOfNodes":6}'
+        ;
+        return JSON.parse(text);
+    }else if ( exampleId === 2 ){
+        var text =
+            ''
+        ;
+        return JSON.parse(text);
+    }else if ( exampleId === 3 ){
+        var text =
+            ''
+        ;
+        return JSON.parse(text);
+    }else if ( exampleId === 4 ){
+        var text =
+            ''
+        ;
+        return JSON.parse(text);
+    }else if ( exampleId === 5 ){
+        var text =
+            ''
+        ;
+        return JSON.parse(text);
+    }
+    var nameEQ = "graphData=";
+    var ca = document.cookie.split(';');
+    for(var i=0;i < ca.length;i++) {
+        var c = ca[i];
+        while (c.charAt(0)==' ') c = c.substring(1,c.length);
+        if (c.indexOf(nameEQ) == 0) return JSON.parse(c.substring(nameEQ.length,c.length));
+    }
+    return null;
 }
