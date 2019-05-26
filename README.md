@@ -1,3 +1,4 @@
+# [Online Demo and Teach](https://yeganehha.github.io/AStarAlgorithm/)
 # A Star Algorithm
 A* (pronounced "A star") is a computer algorithm that is widely used in pathfinding and graph traversal, which is the process of finding a path between multiple points, called "nodes". It enjoys widespread use due to its performance and accuracy. [( Read More ... )](https://en.wikipedia.org/wiki/A*_search_algorithm)
 
